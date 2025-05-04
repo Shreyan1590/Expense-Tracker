@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
+            color: #fff;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body.light-theme {
+            background: #f5f5f5;
+            color: #111;
+        }
+
+        h1 {
+            margin: 40px 0 10px;
+            font-size: 3rem;
+            text-align: center;
+            animation: fadeDown 1.2s ease-in-out;
+        }
+
+        @keyframes fadeDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .container {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            margin: 20px;
+            width: 90%;
+            max-width: 1000px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+            animation: popIn 1s ease-out;
+        }
+
+        @keyframes popIn {
+            0% {
+                transform: scale(0.95);
+                opacity: 0;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .filter-controls,
+        .form-section,
+        .history {
+            margin: 20px 0;
+            text-align: center;
+        }
+
+        .filter-controls select,
+        .form-section input,
+        .form-section select,
+        .form-section button {
+            padding: 10px;
+            margin: 5px;
+            border-radius: 10px;
+            border: none;
+            font-size: 1rem;
+        }
+
+        .toggle-theme {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #fff;
+            color: #000;
+            border-radius: 50px;
+            padding: 8px 15px;
+            cursor: pointer;
+            z-index: 10;
+            font-weight: bold;
+        }
+
+        .charts {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+        }
+
+        canvas {
+            background: #fff;
+            border-radius: 15px;
+            padding: 15px;
+            width: 80%;
+            /* Set the width to 80% of the container */
+            max-width: 800px;
+            /* Set the max width to 800px or adjust it to your preference */
+        }
+
+        .summary {
+            text-align: center;
+            font-size: 1.2rem;
+            margin-top: 20px;
+        }
+
+        .history {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .history-entry {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.2);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="toggle-theme" onclick="toggleTheme()">🌙 Toggle Theme</div>
+    <h1>💸 Expense Tracker</h1>
+    <div class="container">
+        <div class="form-section">
+            <input type="number" id="amount" placeholder="Amount (₹)" />
+            <input type="text" id="description" placeholder="Description" />
+            <select id="category">
+                <option value="Groceries">Groceries</option>
+                <option value="Transport">Transport</option>
+                <option value="Shopping">Shopping</option>
+                <option value="Dining">Dining</option>
+                <option value="Rent">Rent</option>
+                <option value="Utilities">Utilities</option>
+                <option value="Healthcare">Healthcare</option>
+                <option value="Education">Education</option>
+                <option value="Insurance">Insurance</option>
+                <option value="Entertainment">Entertainment</option>
+                <option value="Subscriptions">Subscriptions</option>
+                <option value="Savings">Savings</option>
+                <option value="Gifts">Gifts</option>
+                <option value="Donations">Donations</option>
+                <option value="Taxes">Taxes</option>
+                <option value="Loan Payments">Loan Payments</option>
+                <option value="Credit Card Bills">Credit Card Bills</option>
+                <option value="Investments">Investments</option>
+                <option value="Home Maintenance">Home Maintenance</option>
+                <option value="Furnishing">Furnishing & Appliances</option>
+                <option value="Cleaning Supplies">Cleaning Supplies</option>
+                <option value="Childcare">Childcare</option>
+                <option value="School Supplies">School Supplies</option>
+                <option value="Toys">Toys</option>
+                <option value="Office Supplies">Office Supplies</option>
+                <option value="Courses">Online Courses / Certifications</option>
+                <option value="Work Travel">Work Travel</option>
+                <option value="Flight Tickets">Flight Tickets</option>
+                <option value="Hotel Booking">Hotel Booking</option>
+                <option value="Travel Insurance">Travel Insurance</option>
+                <option value="Pet Food">Pet Food</option>
+                <option value="Food">Food</option>
+                <option value="Vet Visits">Vet Visits</option>
+                <option value="Gym">Gym / Fitness</option>
+                <option value="Spa">Spa / Massage</option>
+                <option value="Hobbies">Hobbies (Music, Art, etc.)</option>
+                <option value="Miscellaneous">Miscellaneous</option>
+                <option value="Lost/Stolen">Lost / Stolen Items</option>
+            </select>
+            <button onclick="addExpense()">Add Expense</button>
+        </div>
+        <div class="filter-controls">
+            <label for="filter">View:</label>
+            <select id="filter" onchange="applyFilter()">
+                <option value="all">All</option>
+                <option value="day">Today</option>
+                <option value="week">This Week</option>
+                <option value="month">This Month</option>
+            </select>
+
+            <input type="date" id="customDate" onchange="applyFilter()" style="display: none;" />
+            <input type="date" id="datePicker" onchange="filterByDate()" />
+        </div>
+        <div class="charts">
+            <canvas id="chart"></canvas>
+            <canvas id="categoryChart"></canvas>
+        </div>
+        <div class="summary" id="summary"></div>
+        <div class="history" id="history"></div>
+    </div>
+    <script>
+        let expenses = [];
+
+        const chartCtx = document.getElementById('chart').getContext('2d');
+        const categoryCtx = document.getElementById('categoryChart').getContext('2d');
+
+        let barChart = new Chart(chartCtx, {
+            type: 'bar',
+            data: { labels: [], datasets: [{ label: 'Expenses', data: [], backgroundColor: '#00c6ff', borderRadius: 8 }] },
+            options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true }, x: {} } }
+        });
+
+        let categoryChart = new Chart(categoryCtx, {
+            type: 'pie',
+            data: { labels: [], datasets: [{ data: [], backgroundColor: ['#ff6384', '#36a2eb', '#cc65fe', '#ffce56'] }] },
+            options: { responsive: true }
+        });
+
+        function addExpense() {
+            const amount = parseFloat(document.getElementById('amount').value);
+            const description = document.getElementById('description').value;
+            const category = document.getElementById('category').value;
+            if (!amount || !description) return alert('Please fill in all fields.');
+            const expense = { amount, category, description, date: new Date().toISOString() };
+            expenses.push(expense);
+            saveExpenses();
+            applyFilter();
+            updateHistory();
+            document.getElementById('amount').value = '';
+            document.getElementById('description').value = '';
+        }
+
+        function deleteExpense(index) {
+            expenses.splice(index, 1);
+            saveExpenses();
+            applyFilter();
+            updateHistory();
+        }
+
+        function updateCharts(filteredExpenses) {
+            const daily = {};
+            const categories = {};
+
+            filteredExpenses.forEach(e => {
+                const dateKey = new Date(e.date).toISOString().split('T')[0];
+                daily[dateKey] = (daily[dateKey] || 0) + e.amount;
+                categories[e.category] = (categories[e.category] || 0) + e.amount;
+            });
+
+            barChart.data.labels = Object.keys(daily);
+            barChart.data.datasets[0].data = Object.values(daily);
+            barChart.update();
+
+            categoryChart.data.labels = Object.keys(categories);
+            categoryChart.data.datasets[0].data = Object.values(categories);
+            categoryChart.update();
+
+            updateSummary(filteredExpenses, categories);
+        }
+
+        function applyFilter() {
+            const filter = document.getElementById('filter').value;
+            const now = new Date();
+            const customDateInput = document.getElementById('customDate');
+
+            // Show/hide the calendar input
+            customDateInput.style.display = filter === 'custom' ? 'inline-block' : 'none';
+
+            let filtered = expenses.filter(e => {
+                const date = new Date(e.date);
+                if (filter === 'day') return date.toDateString() === now.toDateString();
+                if (filter === 'week') {
+                    const start = new Date(now);
+                    start.setDate(start.getDate() - start.getDay());
+                    const end = new Date(start);
+                    end.setDate(start.getDate() + 6);
+                    return date >= start && date <= end;
+                }
+                if (filter === 'month') return date.getMonth() === now.getMonth() && date.getFullYear() === now.getFullYear();
+                if (filter === 'custom') {
+                    const selected = new Date(customDateInput.value);
+                    return selected.toDateString() === date.toDateString();
+                }
+                return true;
+            });
+
+            updateCharts(filtered);
+        }
+
+        function filterByDate() {
+            const selectedDate = document.getElementById('datePicker').value;
+            if (!selectedDate) return;
+
+            const filtered = expenses.filter(e => {
+                return new Date(e.date).toISOString().split('T')[0] === selectedDate;
+            });
+
+            updateCharts(filtered);
+            updateHistory(filtered);
+        }
+
+        function updateSummary(data, categories) {
+            const total = data.reduce((sum, e) => sum + e.amount, 0);
+            const avg = (total / data.length).toFixed(2);
+            const sorted = Object.entries(categories).sort((a, b) => b[1] - a[1]);
+            const high = sorted[0]?.[0] || 'N/A';
+            const low = sorted[sorted.length - 1]?.[0] || 'N/A';
+            document.getElementById('summary').innerHTML = `
+        <strong>Total:</strong> ₹${total} |
+        <strong>Average:</strong> ₹${avg} <br>
+        <strong>Highest:</strong> ${high} |
+        <strong>Lowest:</strong> ${low}
+      `;
+        }
+
+        function updateHistory(filteredList = expenses) {
+            const historyDiv = document.getElementById('history');
+            historyDiv.innerHTML = '';
+            filteredList.slice().reverse().forEach((e, i, arr) => {
+                const div = document.createElement('div');
+                div.className = 'history-entry';
+                const index = expenses.indexOf(e); // original index
+                div.innerHTML = `${new Date(e.date).toLocaleString()} - ₹${e.amount} for ${e.category} (${e.description}) <button class="delete-btn" onclick="deleteExpense(${index})">Delete</button>`;
+                historyDiv.appendChild(div);
+            });
+        }
+
+        function toggleTheme() {
+            document.body.classList.toggle('light-theme');
+            const isLight = document.body.classList.contains('light-theme');
+            document.querySelector('.toggle-theme').textContent = isLight ? '🌞 Toggle Theme' : '🌙 Toggle Theme';
+            localStorage.setItem('theme', isLight ? 'light' : 'dark');
+        }
+
+        function saveExpenses() {
+            localStorage.setItem('expenses', JSON.stringify(expenses));
+        }
+
+        function loadExpenses() {
+            const stored = localStorage.getItem('expenses');
+            if (stored) expenses = JSON.parse(stored);
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            if (savedTheme === 'light') {
+                document.body.classList.add('light-theme');
+                document.querySelector('.toggle-theme').textContent = '🌞 Toggle Theme';
+            }
+            loadExpenses();
+            applyFilter();
+            updateHistory();
+        });
+    </script>
+</body>
+
+</html>
