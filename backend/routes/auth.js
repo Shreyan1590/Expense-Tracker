@@ -16,27 +16,37 @@ router.post('/signup', async (req, res) => {
     const { username, password, email } = req.body;
 
     try {
+        // Check if username or email exists
         const exists = await User.findOne({ $or: [{ username }, { email }] });
-        if (exists) return res.status(400).json({ message: 'Username or Email already exists' });
+        if (exists) {
+            console.log("User exists with the same username or email.");
+            return res.status(400).json({ message: 'Username or Email already exists' });
+        }
 
+        // Hash password
         const hashed = await bcrypt.hash(password, 10);
-        const otp = generateOTP(); // Generate OTP
+
+        // Generate OTP
+        const otp = generateOTP();
+        console.log('OTP generated:', otp); // Log OTP for debugging
         const otpExpires = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
 
-        // Log the generated OTP to check it in the console
-        console.log('OTP generated:', otp);
-
+        // Create new user
         const user = new User({ username, password: hashed, email, otp, otpExpires });
         await user.save();
 
-        await sendOTPEmail(email, username, otp); // Send OTP email
+        // Send OTP email
+        await sendOTPEmail(email, username, otp); 
+        console.log(`OTP email sent to ${email}`);
 
         res.status(201).json({ message: 'OTP sent to email' });
+
     } catch (err) {
-        console.error("Signup Error:", err);
+        console.error("Error during signup:", err);
         res.status(500).json({ message: 'Error during signup' });
     }
 });
+
 
 // OTP Verification Route
 router.post('/verify', async (req, res) => {
