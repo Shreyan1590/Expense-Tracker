@@ -16,25 +16,21 @@ router.post('/signup', async (req, res) => {
     const { username, password, email } = req.body;
 
     try {
-        // Check if username or email already exists
         const exists = await User.findOne({ $or: [{ username }, { email }] });
         if (exists) return res.status(400).json({ message: 'Username or Email already exists' });
 
-        // Hash password
         const hashed = await bcrypt.hash(password, 10);
+        const otp = generateOTP(); // Generate OTP
+        const otpExpires = Date.now() + 10 * 60 * 1000; // OTP expires in 10 minutes
 
-        // Generate OTP and expiration time (10 minutes)
-        const otp = generateOTP();
-        const otpExpires = Date.now() + 10 * 60 * 1000;
+        // Log the generated OTP to check it in the console
+        console.log('OTP generated:', otp);
 
-        // Create new user
         const user = new User({ username, password: hashed, email, otp, otpExpires });
         await user.save();
 
-        // Send OTP to user's email
-        await sendOTPEmail(email, username, otp);
+        await sendOTPEmail(email, username, otp); // Send OTP email
 
-        // Send response
         res.status(201).json({ message: 'OTP sent to email' });
     } catch (err) {
         console.error("Signup Error:", err);

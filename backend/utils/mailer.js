@@ -30,20 +30,22 @@ const sendOTPEmail = async (toEmail, username, otp) => {
     const mailOptions = {
         from: process.env.EMAIL_USER,
         to: toEmail,
-        subject: "Verify Your Email for Expense Tracker",
+        subject: "Your OTP for Expense Tracker",
         html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px;">
-                <h2>Hello ${username},</h2>
-                <p>Use the OTP below to verify your email and complete your signup:</p>
-                <h1 style="letter-spacing: 2px;">${otp}</h1>
+            <div>
+                <h2>Hi ${username},</h2>
+                <p>Your OTP for Expense Tracker is <strong>${otp}</strong>.</p>
                 <p>This OTP is valid for 10 minutes.</p>
-                <p>If you did not initiate this request, please ignore this email.</p>
-                <p style="color: #888; font-size: 0.9rem;">This is an automated message. Please do not reply.</p>
             </div>
         `
     };
 
-    await transporter.sendMail(mailOptions);
+    try {
+        await transporter.sendMail(mailOptions);
+        console.log('OTP sent successfully!');
+    } catch (error) {
+        console.error('Error sending email:', error);
+    }
 };
 
 module.exports = { sendWelcomeEmail, sendOTPEmail };

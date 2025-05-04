@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -36,6 +37,7 @@
                 opacity: 0;
                 transform: translateY(-20px);
             }
+
             to {
                 opacity: 1;
                 transform: translateY(0);
@@ -63,6 +65,7 @@
                 transform: scale(0.9);
                 opacity: 0;
             }
+
             100% {
                 transform: scale(1);
                 opacity: 1;
@@ -159,6 +162,7 @@
             from {
                 opacity: 0;
             }
+
             to {
                 opacity: 1;
             }
@@ -177,9 +181,9 @@
         .form-toggle:hover {
             color: #4CAF50;
         }
-
     </style>
 </head>
+
 <body>
 
     <h1>Login / Signup</h1>
@@ -205,6 +209,9 @@
         <div class="error" id="signup-error-message">Error during signup</div>
         <form id="signupForm">
             <div class="input-group">
+                <input type="email" id="signup-email" placeholder="Email" required />
+            </div>
+            <div class="input-group">
                 <input type="text" id="signup-username" placeholder="Username" required />
             </div>
             <div class="input-group">
@@ -229,36 +236,38 @@
         const validPassword = "123user123"; // Fixed password (for initial testing)
 
         // Signup functionality
-        document.getElementById("signupForm").addEventListener("submit", function(event) {
+        // Signup functionality
+        document.getElementById("signupForm").addEventListener("submit", function (event) {
             event.preventDefault();
 
             const username = document.getElementById("signup-username").value;
             const password = document.getElementById("signup-password").value;
+            const email = document.getElementById("signup-email").value; // Add email input for signup
 
-            fetch("/signup", {
+            fetch("/api/auth/signup", { // Make sure the correct API endpoint is being hit
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ username, password })
+                body: JSON.stringify({ username, password, email }) // Send email with username and password
             })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    alert("Signup successful!");
-                    document.getElementById("signup-container").style.display = "none";
-                    document.getElementById("login-container").style.display = "block"; // Show login form after signup
-                } else {
+                .then(response => response.json())
+                .then(data => {
+                    if (data.message === "OTP sent to email") {
+                        alert("Signup successful! Please check your email for the OTP.");
+                        document.getElementById("signup-container").style.display = "none";
+                        document.getElementById("login-container").style.display = "block"; // Show login form after signup
+                    } else {
+                        document.getElementById("signup-error-message").style.display = "block";
+                    }
+                })
+                .catch(error => {
                     document.getElementById("signup-error-message").style.display = "block";
-                }
-            })
-            .catch(error => {
-                document.getElementById("signup-error-message").style.display = "block";
-            });
+                });
         });
 
         // Handle Login functionality
-        document.getElementById("loginForm").addEventListener("submit", function(event) {
+        document.getElementById("loginForm").addEventListener("submit", function (event) {
             event.preventDefault();
 
             const username = document.getElementById("login-username").value;
@@ -275,7 +284,7 @@
         });
 
         // Toggle between forms
-        document.getElementById("toggle-form").addEventListener("click", function() {
+        document.getElementById("toggle-form").addEventListener("click", function () {
             const loginContainer = document.getElementById("login-container");
             const signupContainer = document.getElementById("signup-container");
             const toggleText = document.getElementById("toggle-text");
@@ -293,4 +302,5 @@
     </script>
 
 </body>
+
 </html>
